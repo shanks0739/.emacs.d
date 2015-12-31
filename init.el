@@ -24,6 +24,8 @@
 ;; basic conf
 (load "basic_conf")
 
+;; 开发环境配置，如自动补全，符号定位和引用，颜色配置
+(load "env_development")
 
 ;(require 'color-theme)
 ;(setq color-theme-is-global t)
@@ -31,17 +33,17 @@
 ;(color-theme-matrix)
 ;(color-theme-gnome2)
 
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories  "~/.emacs.d/package/auto-comlete/dict")
-(ac-config-default)
+;(require 'auto-complete-config)
+;(add-to-list 'ac-dictionary-directories  "~/.emacs.d/package/auto-comlete/dict")
+;(ac-config-default)
 ;(require 'auto-complete)
 ;(require 'smex)
-(setq ac-auto-start 2)
+;(setq ac-auto-start 2)
 
-(require 'yasnippet)
+;(require 'yasnippet)
 ;(setq yas-prompt-functions
 ;      '(yas-dropdown-prompt yas-x-prompt yas-completing-prompt yas-ido-prompt yas-no-prompt))
-(yas-global-mode 1)
-(yas-minor-mode-on) ; 以minor mode打开，这样才能配合主mode使用
+;(yas-global-mode 1)
+;(yas-minor-mode-on) ; 以minor mode打开，这样才能配合主mode使用
 
 
