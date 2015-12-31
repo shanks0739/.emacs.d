@@ -17,8 +17,9 @@
 (column-number-mode t)
 (line-number-mode t)
 
-;; 缩进
-(setq default-tab-width 4)
+;; 缩进 tab key was used!!! (auto-complete)
+;(setq indent-tabs-mode nil)
+;(setq default-tab-width 4)
 
 
 ;; datetime
@@ -49,3 +50,15 @@
 ;;关闭烦人的出错时的提示声
 (setq visible-bell t)
 
+;; keys
+(global-set-key (kbd "C-c <left>")  'windmove-left)
+(global-set-key (kbd "C-c <right>") 'windmove-right)
+(global-set-key (kbd "C-c <up>")    'windmove-up)
+(global-set-key (kbd "C-c <down>")  'windmove-down)
+
+(global-set-key (kbd "M-SPC") 'set-mark-command)
+
+(global-set-key (kbd "M-1") 'delete-other-windows)
+(global-set-key (kbd "M-2") 'split-window-below)
+(global-set-key (kbd "M-3") 'split-window-right)
+(global-set-key (kbd "M-0") 'delete-window)
