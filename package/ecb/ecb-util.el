@@ -25,7 +25,7 @@
 ;; GNU Emacs; see the file COPYING.  If not, write to the Free Software
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-;; $Id: ecb-util.el,v 1.163 2010/02/23 16:09:08 berndl Exp $
+;; $Id: ecb-util.el,v 1.155 2009/05/15 15:19:53 berndl Exp $
 
 ;;; Commentary:
 ;;
@@ -97,22 +97,21 @@
 ;;; ----- Some constants -----------------------------------
 
 ;;;###autoload
+;;(defconst ecb-running-xemacs (string-match "XEmacs\\|Lucid" emacs-version))
 (defconst ecb-running-xemacs (featurep 'xemacs))
-
-(defconst ecb-running-gnu-emacs (not ecb-running-xemacs))
 
 (defconst ecb-running-unsupported-emacs (condition-case nil
                                             (<= emacs-major-version 20)
                                           (error t))
-  "True if running XEmacs or Gnu Emacs < 21.")
+  "True if running XEmacs or Emacs < 21.")
 
-(defconst ecb-running-gnu-emacs-version-22 (and ecb-running-gnu-emacs
-                                                (>= emacs-major-version 22))
-  "True if running Gnu Emacs >= version 22")
+(defconst ecb-running-version-22 (and (not ecb-running-unsupported-emacs)
+                                      (>= emacs-major-version 22))
+  "True if running \(X)Emacs >= version 22")
 
-(defconst ecb-running-gnu-emacs-version-23 (and ecb-running-gnu-emacs
-                                                (>= emacs-major-version 23))
-  "True if running Gnu Emacs >= version 23")
+(defconst ecb-running-version-23 (and (not ecb-running-unsupported-emacs)
+                                      (>= emacs-major-version 23))
+  "True if running \(X)Emacs >= version 23")
 
 (defconst ecb-temp-dir
   (file-name-as-directory
@@ -174,24 +173,10 @@ want the BODY being parsed by semantic!. If not use the variable
      ,@body))
 
 (defmacro when-ecb-running-emacs (&rest body)
-  "Evaluates BODY when `ecb-running-gnu-emacs' is false. Use this
-macro when you want the BODY being parsed by semantic!. If not
-use the form \(unless ecb-running-xemacs)."
-  `(when ecb-running-gnu-emacs
-     ,@body))
-
-(defmacro when-ecb-running-emacs-22 (&rest body)
-  "Evaluates BODY when `ecb-running-gnu-emacs-version-22' is
-true. Use this macro when you want the BODY being parsed by
-semantic!. If not use the form \(when ecb-running-gnu-emacs-version-22)."
-  `(when ecb-running-gnu-emacs-version-22
-     ,@body))
-
-(defmacro when-ecb-running-emacs-23 (&rest body)
-  "Evaluates BODY when `ecb-running-gnu-emacs-version-23' is
-true. Use this macro when you want the BODY being parsed by
-semantic!. If not use the form \(when ecb-running-gnu-emacs-version-23)."
-  `(when ecb-running-gnu-emacs-version-23
+  "Evaluates BODY when `ecb-running-xemacs' is false. Use this macro when you
+want the BODY being parsed by semantic!. If not use the form
+\(unless ecb-running-xemacs)."
+  `(unless ecb-running-xemacs
      ,@body))
 
 ;; I do not want all this compatibitly stuff being parsed by semantic,
@@ -331,17 +316,13 @@ Uses the `derived-mode-parent' property of the symbol to trace backwards."
 (if (not ecb-running-xemacs)
     (progn
       (defalias 'ecb-make-overlay            'make-overlay)
-      (defalias 'ecb-overlay-p               'overlayp)
       (defalias 'ecb-overlay-put             'overlay-put)
-      (defalias 'ecb-overlay-get             'overlay-get)
       (defalias 'ecb-overlay-move            'move-overlay)
       (defalias 'ecb-overlay-delete          'delete-overlay)
       (defalias 'ecb-overlay-kill            'delete-overlay))
   ;; XEmacs
   (defalias 'ecb-make-overlay            'make-extent)
-  (defalias 'ecb-overlay-p               'extentp)
   (defalias 'ecb-overlay-put             'set-extent-property)
-  (defalias 'ecb-overlay-get             'extent-property)
   (defalias 'ecb-overlay-move            'set-extent-endpoints)
   (defalias 'ecb-overlay-delete          'detach-extent)
   (defalias 'ecb-overlay-kill            'delete-extent))
@@ -683,22 +664,6 @@ results in
 ;;    (if (string= (car item1) (car item2))
 ;;        (string< (symbol-name (cdr item1)) (symbol-name (cdr item2)))
 ;;      (string< (car item1) (car item2)))))
-
-(defun ecb-values-of-symbol/value-list (list &optional elem-accessor)
-  "Return a list of values build from the members of LIST.
-The result-list is a list which is build from LIST by using the
-symbol-value if a list-member is a symbol and otherwise the
-list-member itself.
-
-If ELEM-ACCESSOR is a function then it is used to get that part of an elem
-of LIST for which the rule above should be applied."
-  (let ((elem-acc (or elem-accessor 'identity)))
-    (mapcar (function (lambda (elem)
-                        (let ((e (funcall elem-acc elem)))
-                          (if (symbolp e)
-                              (symbol-value e)
-                            e))))
-            list)))
 
 ;; Maybe we should enhance this docstring ;-)
 (defun ecb-member-of-symbol/value-list (value list &optional elem-accessor
@@ -1342,18 +1307,14 @@ should stopped but no debugging is senseful."
 
 ;;; ----- Text and string-stuff ----------------------------
 
-(defun ecb-merge-face (face start end &optional text)
-  "Merge FACE either to a buffer-part or to TEXT.
-In both cases START and END define the region which should be
-faced. The FACE is merged, i.e. the values of all face-attributes
-of FACE take effect and the values of all face-attributes of the
-buffer-part or TEXT which are not set by FACE are preserved.
-
-If always returns TEXT \(if not nil then modified with FACE)."
+(defun ecb-merge-face-into-text (text face)
+  "Merge FACE to the already precolored TEXT so the values of all
+face-attributes of FACE take effect and but the values of all face-attributes
+of TEXT which are not set by FACE are preserved."
   (if (null face)
       text
     (if ecb-running-xemacs
-        (put-text-property start end 'face
+        (put-text-property 0 (length text) 'face
                            (let* ((current-face (get-text-property 0
                                                                    'face
                                                                    text))
@@ -1375,7 +1336,7 @@ If always returns TEXT \(if not nil then modified with FACE)."
                                )
                              )
                            text)
-      (alter-text-property start end 'face
+      (alter-text-property 0 (length text) 'face
                            (lambda (current-face)
                              (let ((cf
                                     (typecase current-face
@@ -1394,15 +1355,6 @@ If always returns TEXT \(if not nil then modified with FACE)."
                                  (append nf cf))))
                            text))
     text))
-
-(defun ecb-merge-face-into-text (text face)
-  "Merge FACE to the already precolored TEXT so the values of all
-face-attributes of FACE take effect and but the values of all face-attributes
-of TEXT which are not set by FACE are preserved.
-If FACE or TEXT is nil then simply original TEXT is returned."
-  (if (or (null face) (null text))
-      text
-    (ecb-merge-face face 0 (length text) text)))
 
 (if (fboundp 'compare-strings)
     (defalias 'ecb-compare-strings 'compare-strings)
@@ -1665,7 +1617,8 @@ BUFFER \(not read-only an evaluation-time of BODY) and make afterwards BUFFER
 read-only. Note: All this is done with `save-excursion' so after BODY that
 buffer is current which was it before calling this macro."
   `(if (buffer-live-p ,buffer)
-       (with-current-buffer ,buffer
+       (save-excursion
+         (set-buffer ,buffer)
          (unwind-protect
              (progn
                (setq buffer-read-only nil)
@@ -1717,25 +1670,18 @@ or a buffer-object."
     (if (file-exists-p exp-file)
         (delete-file exp-file))))
 
-(defun ecb-buffer-name (buffer-or-window)
-  "Return the buffer-name of BUFFER-OR-WINDOW.
-BUFFER-OR-WINDOW can be a buffer-name, a buffer or a window. If a
-window then the name of the buffer curently displayed in this
-window is returned."
-  (typecase buffer-or-window
-    (string buffer-or-window)
-    (buffer (buffer-name buffer-or-window))
-    (window (buffer-name (window-buffer buffer-or-window)))
+(defun ecb-buffer-name (buffer-or-name)
+  "Return the buffer-name of BUFFER-OR-NAME."
+  (typecase buffer-or-name
+    (string buffer-or-name)
+    (buffer (buffer-name buffer-or-name))
     (otherwise nil)))
 
-(defun ecb-buffer-obj (buffer-or-window)
-  "Return the buffer-object of BUFFER-OR-WINDOW.
-BUFFER-OR-WINDOW can be a buffer-name, a buffer or a window.
-If a window then the buffer curently displayed in this window is returned."
-  (typecase buffer-or-window
-    (string (get-buffer buffer-or-window))
-    (buffer buffer-or-window)
-    (window (window-buffer buffer-or-window))
+(defun ecb-buffer-obj (buffer-or-name)
+  "Return the buffer-object of BUFFER-OR-NAME."
+  (typecase buffer-or-name
+    (string (get-buffer buffer-or-name))
+    (buffer buffer-or-name)
     (otherwise nil)))
 
 (defun ecb-buffer-local-value (sym buffer)
@@ -1795,7 +1741,8 @@ nil whereas in the latter case the current-buffer is assumed."
     (or (and file (file-readable-p file))
         (and (not ecb-running-xemacs)
              (if filename
-                 (with-current-buffer (find-file-noselect filename)
+                 (save-excursion
+                   (set-buffer (find-file-noselect filename))
                    (ecb-current-buffer-archive-extract-p))
                (ecb-current-buffer-archive-extract-p))))))
 
@@ -1840,7 +1787,6 @@ means not to count the minibuffer even if it is active."
           (error "Window must be on frame."))
       (let ((current-frame (selected-frame))
             (current-window (selected-window))
-            (current-buf (current-buffer))
             (current-point (point))
             list)
         (unwind-protect
@@ -1860,7 +1806,6 @@ means not to count the minibuffer even if it is active."
               (setq list (cons window list)))
           (select-frame current-frame)
           (select-window current-window)
-          (set-buffer current-buf)
           ;; we must reset the point of the buffer which was current at call-time
           ;; of this function
           (goto-char current-point))))))
@@ -2018,20 +1963,6 @@ nothing happens and nil is returned."
 	(select-window window)
       nil)))
 
-
-;; (defmacro ecb-exec-in-window (buffer-or-name &rest body)
-;;   "Evaluates BODY in that window which displays the buffer BUFFER-OR-NAME
-;; which can be either a buffer-object or a buffer-name. If that window is not
-;; visible then BODY is not evaluated and the symbol 'window-not-visible is
-;; returned. Otherwise the return value of BODY is returned. Runs encapsulated in
-;; `save-selected-window' and `save-excursion'."
-;;   `(save-selected-window
-;;      (if (not (ecb-window-select ,buffer-or-name))
-;;          'window-not-visible
-;;        (save-excursion
-;;          (set-buffer ,buffer-or-name)
-;;          ,@body))))
-
 (defmacro ecb-exec-in-window (buffer-or-name &rest body)
   "Evaluates BODY in that window which displays the buffer BUFFER-OR-NAME
 which can be either a buffer-object or a buffer-name. If that window is not
@@ -2041,7 +1972,8 @@ returned. Otherwise the return value of BODY is returned. Runs encapsulated in
   `(save-selected-window
      (if (not (ecb-window-select ,buffer-or-name))
          'window-not-visible
-       (with-current-buffer ,buffer-or-name
+       (save-excursion
+         (set-buffer ,buffer-or-name)
          ,@body))))
 
 (put 'ecb-exec-in-window 'lisp-indent-function 1)
@@ -2070,6 +2002,8 @@ the same ordering as `other-window' would walk through the frame.
 If WINDOW is nil then the currently selected window is used."
   (let ((win-number (ecb-position win-list (or window (selected-window)))))
     (if win-number (1+ win-number) nil)))
+
+
 
 ;;; ----- Time  stuff -----------------------------------------
 

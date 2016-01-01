@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2010 Free Software Foundation
 
-;; Author: Eric M. Ludlam <zappo@projectile.siege-engine.com>
-;; Created: 2010-10-18 22:49:05-0400
+;; Author: LZW <lzw@lzw-ubuntu>
+;; Created: 2014-11-15 18:31:12+0800
 ;; Keywords: syntax
 ;; X-RCS: $Id$
 

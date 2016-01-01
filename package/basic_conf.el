@@ -33,6 +33,10 @@
 (blink-cursor-mode -1) ;; 光标不闪
 (mouse-avoidance-mode 'animate) ;; 光标靠近鼠标指针时，让鼠标指针自动让开，别挡住视线。
 
+;; 
+(require 'hl-line)
+(global-hl-line-mode t)
+
 ;; yes or no
 (fset 'yes-or-no-p 'y-or-n-p) 
 

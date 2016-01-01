@@ -47,18 +47,18 @@
 
 ;;#####################################################################
 ;; cedet 代码补全工具，也可以是代码浏览，引用等功能
-;(require 'cedet)
-;(semantic-load-enable-excessive-code-helpers)
-;(global-ede-mode t)
-;(require 'semantic-ia)
-;(require 'semantic-gcc)
-;(global-srecode-minor-mode 1)
-;(semantic-load-enable-semantic-debugging-helpers)
+(require 'cedet)
+(semantic-load-enable-excessive-code-helpers)
+(global-ede-mode t)
+(require 'semantic-ia)
+(require 'semantic-gcc)
+(global-srecode-minor-mode 1)
+(semantic-load-enable-semantic-debugging-helpers)
 
 ;; ecb 这个工具使emacs 看起来像ide
-;(require 'ecb)
-;(setq stack-trace-on-error t)
-;(ecb-activate)
+(require 'ecb)
+(setq stack-trace-on-error t)
+(ecb-activate)
 
 ;;#####################################################################
 

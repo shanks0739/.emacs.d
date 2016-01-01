@@ -24,7 +24,7 @@
 ;; GNU Emacs; see the file COPYING.  If not, write to the Free Software
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-;; $Id: ecb-help.el,v 1.121 2009/06/23 11:16:56 berndl Exp $
+;; $Id: ecb-help.el,v 1.117 2009/05/09 15:23:50 berndl Exp $
 
 ;;; Commentary:
 ;;
@@ -311,8 +311,8 @@ a backtrace-buffer and inserts the contents of that."
     (let* ((messages-buffer 
 	    (get-buffer
 	     (if ecb-running-xemacs " *Message-Log*" "*Messages*")))
-	   (backtrace-buffer (ecb-buffer-obj "*Backtrace*"))
-           (tag-dump-buffer (ecb-buffer-obj "*ecb-tag-dump*")))
+	   (backtrace-buffer (get-buffer "*Backtrace*"))
+           (tag-dump-buffer (get-buffer "*ecb-tag-dump*")))
 
       ;;insert the contents of the tag-dump buffer if it is there. 
       (insert "\n\n-----------------------------------------------------\n")
@@ -437,13 +437,13 @@ could be interesting for support."
                                    ecb-adviced-functions
                                    ecb-last-window-config-before-deactivation
                                    ecb-edit-area-creators
-                                   ecb-partial-reparse-always-full-fetch
                                    ecb-stealthy-function-list
                                    ecb-stealthy-function-state-alist
-                                   ecb-windows-hidden-state
+                                   ecb-windows-hidden
                                    ecb-toggle-layout-state
                                    ecb-tree-buffer-creators
-                                   ecb-ecb-buffer-registry
+                                   ecb-tree-buffers
+                                   ecb-buffer-setfunction-registration
                                    ecb-current-maximized-ecb-buffer-name
                                    ecb-special-ecb-buffers-of-current-layout)
                                  (function (lambda (l r)
