@@ -44,7 +44,7 @@
 (set-cursor-color "green")
 (blink-cursor-mode -1) ;; 光标不闪
 (mouse-avoidance-mode 'animate) ;; 光标靠近鼠标指针时，让鼠标指针自动让开，别挡住视线。
-(set-default cursor-type 'bar) ;设置光标为线条状  
+;(set-default cursor-type 'bar) ;设置光标为线条状  
 
 ;;高亮当前行  
 (require 'hl-line)
@@ -68,9 +68,9 @@
 (setq visible-bell t)
 
 ;; keys
-(windmove-default-keybindings)
-(setq windmove-wrap-around t)
-
+;(windmove-default-keybindings)
+;(setq windmove-wrap-around t)
+;; window move
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)
@@ -78,7 +78,13 @@
 
 (global-set-key (kbd "M-SPC") 'set-mark-command)
 
+;; window split
 (global-set-key (kbd "M-1") 'delete-other-windows)
 (global-set-key (kbd "M-2") 'split-window-below)
 (global-set-key (kbd "M-3") 'split-window-right)
 (global-set-key (kbd "M-0") 'delete-window)
+
+;; 快速切换至上个buffer
+(global-set-key (kbd "<backtab>") #'(lambda ()
+                                      (interactive)
+                                      (switch-to-buffer (other-buffer (current-buffer) 1))))
