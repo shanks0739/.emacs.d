@@ -50,6 +50,7 @@
 ;
 ;;#####################################################################
 ;; helm
+(helm-mode 1)
 (require 'helm-config)
 (require 'helm)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
