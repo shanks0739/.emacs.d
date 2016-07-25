@@ -90,3 +90,5 @@
 ;查找函数引用：gtags-find-rtag
 (global-set-key (kbd "C-x v") 'gtags-find-symbol)
 (global-set-key (kbd "C-x f") 'gtags-find-rtag)
+;; ggtags
+(require 'ggtags)
